@@ -186,11 +186,13 @@ class GeminiLiveService: ObservableObject {
         "realtimeInputConfig": [
           "automaticActivityDetection": [
             "disabled": false,
-            "startOfSpeechSensitivity": "START_SENSITIVITY_LOW",
+            "startOfSpeechSensitivity": "START_SENSITIVITY_HIGH",
             "endOfSpeechSensitivity": "END_SENSITIVITY_LOW",
             "silenceDurationMs": 500,
             "prefixPaddingMs": 40
-          ]
+          ],
+          "activityHandling": "START_OF_ACTIVITY_INTERRUPTS",
+          "turnCoverage": "TURN_INCLUDES_ALL_INPUT"
         ],
         "inputAudioTranscription": [:] as [String: Any],
         "outputAudioTranscription": [:] as [String: Any]
