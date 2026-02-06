@@ -66,6 +66,60 @@ struct TranscriptView: View {
   }
 }
 
+struct ToolCallStatusView: View {
+  let status: ToolCallStatus
+
+  var body: some View {
+    if status != .idle {
+      HStack(spacing: 8) {
+        statusIcon
+        Text(status.displayText)
+          .font(.system(size: 13, weight: .medium))
+          .foregroundColor(.white)
+          .lineLimit(1)
+      }
+      .padding(.horizontal, 14)
+      .padding(.vertical, 8)
+      .background(statusBackground)
+      .cornerRadius(16)
+    }
+  }
+
+  @ViewBuilder
+  private var statusIcon: some View {
+    switch status {
+    case .executing:
+      ProgressView()
+        .scaleEffect(0.7)
+        .tint(.white)
+    case .completed:
+      Image(systemName: "checkmark.circle.fill")
+        .foregroundColor(.green)
+        .font(.system(size: 14))
+    case .failed:
+      Image(systemName: "exclamationmark.circle.fill")
+        .foregroundColor(.red)
+        .font(.system(size: 14))
+    case .cancelled:
+      Image(systemName: "xmark.circle.fill")
+        .foregroundColor(.yellow)
+        .font(.system(size: 14))
+    case .idle:
+      EmptyView()
+    }
+  }
+
+  private var statusBackground: Color {
+    switch status {
+    case .executing: return Color.black.opacity(0.7)
+    case .completed: return Color.black.opacity(0.6)
+    case .failed: return Color.red.opacity(0.3)
+    case .cancelled: return Color.black.opacity(0.6)
+    case .idle: return Color.clear
+    }
+  }
+}
+
 struct SpeakingIndicator: View {
   @State private var animating = false
 
