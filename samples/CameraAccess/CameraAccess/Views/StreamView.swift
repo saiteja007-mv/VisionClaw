@@ -21,6 +21,7 @@ struct StreamView: View {
   @ObservedObject var viewModel: StreamSessionViewModel
   @ObservedObject var wearablesVM: WearablesViewModel
   @ObservedObject var geminiVM: GeminiSessionViewModel
+  var fastVLMService: FastVLMService
 
   var body: some View {
     ZStack {
@@ -78,10 +79,15 @@ struct StreamView: View {
         .padding(.all, 24)
       }
 
+      // FastVLM overlay
+      if fastVLMService.isActive {
+        FastVLMOverlayView(service: fastVLMService)
+      }
+
       // Bottom controls layer
       VStack {
         Spacer()
-        ControlsView(viewModel: viewModel, geminiVM: geminiVM)
+        ControlsView(viewModel: viewModel, geminiVM: geminiVM, fastVLMService: fastVLMService)
       }
       .padding(.all, 24)
     }
@@ -92,6 +98,9 @@ struct StreamView: View {
         }
         if geminiVM.isGeminiActive {
           geminiVM.stopSession()
+        }
+        if fastVLMService.isActive {
+          fastVLMService.stop()
         }
       }
     }
@@ -122,6 +131,7 @@ struct StreamView: View {
 struct ControlsView: View {
   @ObservedObject var viewModel: StreamSessionViewModel
   @ObservedObject var geminiVM: GeminiSessionViewModel
+  var fastVLMService: FastVLMService
 
   var body: some View {
     // Controls row
@@ -136,10 +146,24 @@ struct ControlsView: View {
         }
       }
 
-      // Photo button (glasses mode only — DAT SDK capture)
+      // Photo button (glasses mode only -- DAT SDK capture)
       if viewModel.streamingMode == .glasses {
         CircleButton(icon: "camera.fill", text: nil) {
           viewModel.capturePhoto()
+        }
+      }
+
+      // FastVLM on-device vision button
+      CircleButton(
+        icon: fastVLMService.isActive ? "eye.circle.fill" : "eye.circle",
+        text: "VLM"
+      ) {
+        Task {
+          if fastVLMService.isActive {
+            fastVLMService.stop()
+          } else {
+            await fastVLMService.start()
+          }
         }
       }
 

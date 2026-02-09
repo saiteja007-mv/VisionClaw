@@ -50,6 +50,9 @@ class StreamSessionViewModel: ObservableObject {
   // Gemini Live integration
   var geminiSessionVM: GeminiSessionViewModel?
 
+  // FastVLM on-device vision
+  var fastVLMService: FastVLMService?
+
   // The core DAT SDK StreamSession - handles all streaming operations
   private var streamSession: StreamSession
   // Listener tokens are used to manage DAT SDK event subscriptions
@@ -100,6 +103,8 @@ class StreamSessionViewModel: ObservableObject {
           }
           // Forward video frames to Gemini Live (throttled internally to ~1fps)
           self.geminiSessionVM?.sendVideoFrameIfThrottled(image: image)
+          // Forward to FastVLM for on-device analysis (throttled internally to ~1fps)
+          self.fastVLMService?.analyzeIfReady(image: image)
         }
       }
     }
@@ -189,6 +194,7 @@ class StreamSessionViewModel: ObservableObject {
           self.hasReceivedFirstFrame = true
         }
         self.geminiSessionVM?.sendVideoFrameIfThrottled(image: image)
+        self.fastVLMService?.analyzeIfReady(image: image)
       }
     }
     camera.start()

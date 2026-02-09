@@ -19,6 +19,7 @@ struct StreamSessionView: View {
   @ObservedObject private var wearablesViewModel: WearablesViewModel
   @StateObject private var viewModel: StreamSessionViewModel
   @StateObject private var geminiVM = GeminiSessionViewModel()
+  @State private var fastVLMService = FastVLMService()
 
   init(wearables: WearablesInterface, wearablesVM: WearablesViewModel) {
     self.wearables = wearables
@@ -30,7 +31,7 @@ struct StreamSessionView: View {
     ZStack {
       if viewModel.isStreaming {
         // Full-screen video view with streaming controls
-        StreamView(viewModel: viewModel, wearablesVM: wearablesViewModel, geminiVM: geminiVM)
+        StreamView(viewModel: viewModel, wearablesVM: wearablesViewModel, geminiVM: geminiVM, fastVLMService: fastVLMService)
       } else {
         // Pre-streaming setup view with permissions and start button
         NonStreamView(viewModel: viewModel, wearablesVM: wearablesViewModel)
@@ -38,6 +39,7 @@ struct StreamSessionView: View {
     }
     .task {
       viewModel.geminiSessionVM = geminiVM
+      viewModel.fastVLMService = fastVLMService
       geminiVM.streamingMode = viewModel.streamingMode
     }
     .onChange(of: viewModel.streamingMode) { newMode in
