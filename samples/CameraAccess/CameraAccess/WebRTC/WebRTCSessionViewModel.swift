@@ -22,6 +22,7 @@ class WebRTCSessionViewModel: ObservableObject {
 
   private var webRTCClient: WebRTCClient?
   private var signalingClient: SignalingClient?
+  private var delegateAdapter: WebRTCDelegateAdapter?
 
   func startSession() async {
     guard !isActive else { return }
@@ -35,7 +36,9 @@ class WebRTCSessionViewModel: ObservableObject {
 
     // Create WebRTC client
     let client = WebRTCClient()
-    client.delegate = WebRTCDelegateAdapter(viewModel: self)
+    let adapter = WebRTCDelegateAdapter(viewModel: self)
+    delegateAdapter = adapter
+    client.delegate = adapter
     client.setup()
     webRTCClient = client
 
@@ -75,6 +78,7 @@ class WebRTCSessionViewModel: ObservableObject {
   func stopSession() {
     webRTCClient?.close()
     webRTCClient = nil
+    delegateAdapter = nil
     signalingClient?.disconnect()
     signalingClient = nil
     isActive = false
