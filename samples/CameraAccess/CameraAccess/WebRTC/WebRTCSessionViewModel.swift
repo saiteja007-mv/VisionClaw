@@ -20,6 +20,8 @@ class WebRTCSessionViewModel: ObservableObject {
   @Published var isMuted: Bool = false
   @Published var errorMessage: String?
 
+  var streamingMode: StreamingMode = .glasses
+
   private var webRTCClient: WebRTCClient?
   private var signalingClient: SignalingClient?
   private var delegateAdapter: WebRTCDelegateAdapter?
@@ -95,7 +97,9 @@ class WebRTCSessionViewModel: ObservableObject {
   /// Called by StreamSessionViewModel on each video frame.
   func pushVideoFrame(_ image: UIImage) {
     guard isActive, connectionState == .connected else { return }
-    webRTCClient?.pushVideoFrame(image)
+    // iPhone frames are portrait-rotated at capture; tell WebRTC to rotate back to landscape
+    let rotation: RTCVideoRotation = (streamingMode == .iPhone) ? ._90 : ._0
+    webRTCClient?.pushVideoFrame(image, rotation: rotation)
   }
 
   // MARK: - Signaling Message Handling
