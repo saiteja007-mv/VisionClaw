@@ -1,0 +1,46 @@
+name: Build iOS App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Secrets.swift
+      run: |
+        cd samples/CameraAccess
+        cp CameraAccess/Secrets.swift.example CameraAccess/Secrets.swift
+        sed -i.bak "s/YOUR_GEMINI_API_KEY/${{ secrets.GEMINI_API_KEY }}/g" CameraAccess/Secrets.swift
+        sed -i.bak "s/YOUR_MAC_HOSTNAME/runner.local/g" CameraAccess/Secrets.swift
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    
+    - name: Build Archive
+      run: |
+        cd samples/CameraAccess
+        xcodebuild -project CameraAccess.xcodeproj \
+          -scheme CameraAccess \
+          -destination 'generic/platform=iOS' \
+          -archivePath build/CameraAccess.xcarchive \
+          archive \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Create IPA
+      run: |
+        cd samples/CameraAccess
+        mkdir -p Payload
+        cp -r build/CameraAccess.xcarchive/Products/Applications/*.app Payload/ || true
+        zip -r CameraAccess.ipa Payload || true
+    
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: CameraAccess-iOS
+        path: samples/CameraAccess/*.ipa
